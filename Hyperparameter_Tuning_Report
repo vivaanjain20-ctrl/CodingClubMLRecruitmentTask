@@ -1,0 +1,45 @@
+Hyperparameter Tuning Report
+
+1. Justification for Model Choice
+
+    Selected Model: RandomForestRegressor
+
+    Reasoning: The EDA revealed highly specific, non-linear "rules" for each venue (e.g., Price positively correlates with Energy at Venue Gamma but negatively at Venue Beta). Linear Regression cannot capture these conflicting slopes without extensive manual interaction engineering. Random Forest (a tree-based ensemble) naturally handles these conditional relationships ("If Venue is Gamma, check Price") and is robust to outliers compared to a single Decision Tree.
+
+2. Documentation of Hyperparameters Explored
+
+    I utilized GridSearchCV to exhaustively test the following parameter grid (Total Combinations: 36):
+
+      n_estimators (Number of Trees): [100, 200, 300]
+
+        Purpose: To find the balance between stability (more trees) and diminishing returns/computation time.
+
+      max_depth (Tree Complexity): [10, 15, 20, None]
+
+        Purpose: To control overfitting. None allows full growth, while shallower depths force generalization.
+
+      min_samples_split (Node Splitting): [2, 5, 10]
+
+        Purpose: To reduce noise. Higher values prevent the model from learning specific "outlier" gigs.
+
+3. Validation Strategy
+
+    Method: K-Fold Cross-Validation
+
+    Details: 3-Fold CV with shuffling (random_state=42).
+
+    Process: The training data was split into 3 folds. For each parameter combination, the model was trained on 2 folds and validated on the 3rd. The average RMSE across all 3 folds was used to select the winner.
+
+4. Final Hyperparameter Values The optimal configuration found was:
+
+    n_estimators: 200 (More trees provided better stability than 100).
+
+    max_depth: 10 (Restricting depth improved generalization, preventing the model from memorizing noise).
+
+    min_samples_split: 10 (Requiring more samples per split helped smooth out the predictions).
+
+5. Comparison: Default vs. Tuned Model We evaluated both models on a held-out Test Set (20% of data).
+Metric	Default Model	  Tuned Model	Improvement
+RMSE	  12.4049	        12.1618	    +0.2431
+
+Conclusion: The tuning process successfully reduced the error by enforcing stronger regularization (max_depth=10, min_samples_split=10), proving that the default model was likely overfitting the training noise.
